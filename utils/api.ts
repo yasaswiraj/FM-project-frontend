@@ -2,10 +2,17 @@ import axios from "axios";
 
 const BASE_URL = "http://127.0.0.1:5000";
 
-// Fetch the risk level
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Fetch Risk Level
 export const getRiskLevel = async (answers: any) => {
   try {
-    const response = await axios.post(`${BASE_URL}/risk`, { answers });
+    const response = await apiClient.post("/risk", { answers });
     return response.data;
   } catch (error) {
     console.error("Error fetching risk level:", error);
@@ -13,10 +20,10 @@ export const getRiskLevel = async (answers: any) => {
   }
 };
 
-// Fetch stock data
+// Fetch Stock Data
 export const fetchStockData = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/fetch`);
+    const response = await apiClient.get("/fetch");
     return response.data;
   } catch (error) {
     console.error("Error fetching stock data:", error);
@@ -24,10 +31,10 @@ export const fetchStockData = async () => {
   }
 };
 
-// Fetch stock recommendations
+// Fetch Recommendations
 export const getRecommendations = async (riskLevel: string, diversify: boolean) => {
   try {
-    const response = await axios.post(`${BASE_URL}/recommend`, {
+    const response = await apiClient.post("/recommend", {
       risk_level: riskLevel,
       diversify,
     });
@@ -38,10 +45,10 @@ export const getRecommendations = async (riskLevel: string, diversify: boolean) 
   }
 };
 
-// Save portfolio preference
+// Save Portfolio Preference
 export const savePortfolioPreference = async (diversify: boolean) => {
   try {
-    const response = await axios.post(`${BASE_URL}/portfolio-preference`, { diversify });
+    const response = await apiClient.post("/portfolio-preference", { diversify });
     return response.data;
   } catch (error) {
     console.error("Error saving portfolio preference:", error);
@@ -49,11 +56,11 @@ export const savePortfolioPreference = async (diversify: boolean) => {
   }
 };
 
-// Get saved portfolio preference
+// Get Portfolio Preference
 export const getPortfolioPreference = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/get-preference`);
-    return response.data.preference;
+    const response = await apiClient.get("/get-preference");
+    return response.data;
   } catch (error) {
     console.error("Error fetching portfolio preference:", error);
     throw error;

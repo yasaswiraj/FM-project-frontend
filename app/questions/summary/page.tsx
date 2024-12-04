@@ -32,8 +32,11 @@ export default function SummaryPage() {
             ? "Sector-Diversified Portfolio"
             : "Highest Past Returns"
         );
-        console.log({ savedPreference });
-        localStorage.setItem("savedPreference", savedPreference);
+        console.log({
+          data: savedPreference.preference,
+          type: typeof savedPreference.preference,
+        });
+        localStorage.setItem("savedPreference", savedPreference.preference);
       } catch (error) {
         console.error("Error fetching portfolio preference.");
       }

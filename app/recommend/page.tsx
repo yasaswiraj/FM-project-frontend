@@ -6,18 +6,30 @@ import { getRecommendations } from "@/utils/api";
 
 export default function RecommendPage() {
   const [recommendations, setRecommendations] = useState([]);
+  const [portfolioMetrics, setPortfolioMetrics] = useState({
+    expectedReturn: null,
+    portfolioStdDev: null,
+  });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const fetchRecommendations = async () => {
       const savedRiskLevel = localStorage.getItem("riskLevel") || "High";
-      const savedPreference =
-        localStorage.getItem("savedPreference") === "true";
+      let savedPreference = localStorage.getItem("savedPreference") == "true";
+      console.log("the type", localStorage.getItem("savedPreference"));
+      console.log({ savedRiskLevel, savedPreference });
       try {
+        if (savedRiskLevel === "High" && savedPreference === true) {
+          savedPreference = false;
+        }
         const data = await getRecommendations(savedRiskLevel, savedPreference);
-        setRecommendations(data);
-        console.log(savedRiskLevel);
+        setRecommendations(data.recommendations ? data.recommendations : []);
+        console.log(data);
+        setPortfolioMetrics({
+          expectedReturn: data.expected_return,
+          portfolioStdDev: data.portfolio_std_dev,
+        });
       } catch (error) {
         console.error("Error fetching recommendations.");
       } finally {
@@ -29,10 +41,9 @@ export default function RecommendPage() {
   }, []);
 
   const resetRecommendations = () => {
-    // Clear stored answers and reset state
     localStorage.clear();
     setRecommendations([]);
-    router.push("/"); // Redirect to home
+    router.push("/");
   };
 
   return (
@@ -53,7 +64,7 @@ export default function RecommendPage() {
               </tr>
             </thead>
             <tbody>
-              {recommendations.map((stock: any) => (
+              {recommendations.slice(0, 5).map((stock: any) => (
                 <tr key={stock.Ticker}>
                   <td className="border px-4 py-2">{stock.Ticker}</td>
                   <td className="border px-4 py-2">{stock["Company Name"]}</td>
@@ -68,6 +79,21 @@ export default function RecommendPage() {
               ))}
             </tbody>
           </table>
+          <div className="mt-6 bg-white p-4 rounded shadow">
+            <h2 className="text-xl font-semibold">Portfolio Metrics</h2>
+            <p>
+              <strong>Expected Return:</strong>{" "}
+              {portfolioMetrics.expectedReturn
+                ? `${(portfolioMetrics.expectedReturn * 100).toFixed(2)}%`
+                : "N/A"}
+            </p>
+            <p>
+              <strong>Portfolio Std Deviation:</strong>{" "}
+              {portfolioMetrics.portfolioStdDev
+                ? `${(portfolioMetrics.portfolioStdDev * 100).toFixed(2)}%`
+                : "N/A"}
+            </p>
+          </div>
           <div className="mt-6">
             <button
               onClick={resetRecommendations}
