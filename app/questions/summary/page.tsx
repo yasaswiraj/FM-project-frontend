@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getRiskLevel } from "@/utils/api";
+import { getRiskLevel, getPortfolioPreference } from "@/utils/api";
 
 export default function SummaryPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [riskLevel, setRiskLevel] = useState<string | null>(null);
+  const [preference, setPreference] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,7 +24,23 @@ export default function SummaryPage() {
       }
     };
 
+    const fetchPreference = async () => {
+      try {
+        const savedPreference = await getPortfolioPreference();
+        setPreference(
+          savedPreference
+            ? "Sector-Diversified Portfolio"
+            : "Highest Past Returns"
+        );
+        console.log({ savedPreference });
+        localStorage.setItem("savedPreference", savedPreference);
+      } catch (error) {
+        console.error("Error fetching portfolio preference.");
+      }
+    };
+
     fetchRiskLevel();
+    fetchPreference();
   }, []);
 
   return (
@@ -42,6 +59,14 @@ export default function SummaryPage() {
               Your Risk Level:
             </h2>
             <p className="text-green-500 font-bold">{riskLevel}</p>
+          </div>
+        )}
+        {preference && (
+          <div className="mt-4">
+            <h2 className="text-xl font-semibold text-black">
+              Your Portfolio Preference:
+            </h2>
+            <p className="text-blue-500 font-bold">{preference}</p>
           </div>
         )}
         <button

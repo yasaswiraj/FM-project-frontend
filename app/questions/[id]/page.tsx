@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { use } from "react";
+import { savePortfolioPreference } from "@/utils/api";
 
 const QUESTIONS = [
   {
@@ -24,6 +25,12 @@ const QUESTIONS = [
     label: "What is your investment amount?",
     options: ["0-10K USD", "10K-50K USD", "50K+ USD"],
   },
+  {
+    id: "preference",
+    label:
+      "Do you prefer a sector-diversified portfolio or the stocks with the highest past returns?",
+    options: ["Sector-Diversified Portfolio", "Highest Past Returns"],
+  },
 ];
 
 export default function QuestionPage({
@@ -41,10 +48,15 @@ export default function QuestionPage({
     return null;
   }
 
-  const handleAnswer = (answer: string) => {
+  const handleAnswer = async (answer: string) => {
     const savedAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
     const updatedAnswers = { ...savedAnswers, [id]: answer };
     localStorage.setItem("answers", JSON.stringify(updatedAnswers));
+
+    if (id === "preference") {
+      // Save preference to the backend
+      await savePortfolioPreference(answer === "Sector-Diversified Portfolio");
+    }
 
     const currentIndex = QUESTIONS.findIndex((q) => q.id === id);
     const nextQuestion = QUESTIONS[currentIndex + 1];

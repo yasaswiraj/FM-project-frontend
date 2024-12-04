@@ -12,8 +12,10 @@ export default function RecommendPage() {
   useEffect(() => {
     const fetchRecommendations = async () => {
       const savedRiskLevel = localStorage.getItem("riskLevel") || "High";
+      const savedPreference =
+        localStorage.getItem("savedPreference") === "true";
       try {
-        const data = await getRecommendations(savedRiskLevel, true);
+        const data = await getRecommendations(savedRiskLevel, savedPreference);
         setRecommendations(data);
         console.log(savedRiskLevel);
       } catch (error) {

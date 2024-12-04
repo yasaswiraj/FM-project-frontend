@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { fetchStockData } from "@/utils/api"; // Assuming this function is defined in utils/api.ts
 
 export default function Home() {
   const router = useRouter();
@@ -9,6 +11,19 @@ export default function Home() {
     localStorage.clear(); // Clear previous answers
     router.push("/questions/age"); // Start with the first question
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchStockData();
+        console.log("Stock data fetched successfully:", response);
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+      }
+    };
+
+    fetchData(); // Fetch stock data on app load
+  }, []);
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
