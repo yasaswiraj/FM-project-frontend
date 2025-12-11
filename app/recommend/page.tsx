@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { getRecommendations, fetchStockChartData } from "@/utils/api";
 
 export default function RecommendPage() {
@@ -30,7 +31,7 @@ export default function RecommendPage() {
           expectedReturn: data.expected_return,
           portfolioStdDev: data.portfolio_std_dev,
         });
-      } catch (error) {
+      } catch {
         console.error("Error fetching recommendations.");
       } finally {
         setLoading(false);
@@ -82,7 +83,7 @@ export default function RecommendPage() {
               </tr>
             </thead>
             <tbody>
-              {recommendations.slice(0, 5).map((stock: any) => (
+              {recommendations.slice(0, 5).map((stock: { Ticker: string; "Company Name": string; Sector: string; CAGR: number; "Std Deviation": number }) => (
                 <tr
                   key={stock.Ticker}
                   className="cursor-pointer hover:bg-gray-200"
@@ -138,9 +139,11 @@ export default function RecommendPage() {
             {chartLoading ? (
               <p>Loading chart...</p>
             ) : chartData ? (
-              <img
+              <Image
                 src={`data:image/png;base64,${chartData}`}
                 alt={`Forecast for ${selectedStock}`}
+                width={800}
+                height={600}
                 className="w-full"
               />
             ) : (

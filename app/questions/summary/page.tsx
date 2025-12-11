@@ -19,7 +19,7 @@ export default function SummaryPage() {
         const result = await getRiskLevel(savedAnswers);
         setRiskLevel(result.risk_level);
         localStorage.setItem("riskLevel", result.risk_level);
-      } catch (error) {
+      } catch {
         console.error("Error calculating risk level.");
       }
     };
@@ -37,7 +37,7 @@ export default function SummaryPage() {
           type: typeof savedPreference.preference,
         });
         localStorage.setItem("savedPreference", savedPreference.preference);
-      } catch (error) {
+      } catch {
         console.error("Error fetching portfolio preference.");
       }
     };
