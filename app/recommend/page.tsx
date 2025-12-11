@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getRecommendations } from "@/utils/api";
+import { getRecommendations, fetchStockChartData } from "@/utils/api";
 
 export default function RecommendPage() {
   const [recommendations, setRecommendations] = useState([]);
@@ -11,21 +11,21 @@ export default function RecommendPage() {
     portfolioStdDev: null,
   });
   const [loading, setLoading] = useState(true);
+  const [selectedStock, setSelectedStock] = useState<string | null>(null);
+  const [chartData, setChartData] = useState<string | null>(null);
+  const [chartLoading, setChartLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const fetchRecommendations = async () => {
       const savedRiskLevel = localStorage.getItem("riskLevel") || "High";
-      let savedPreference = localStorage.getItem("savedPreference") == "true";
-      console.log("the type", localStorage.getItem("savedPreference"));
-      console.log({ savedRiskLevel, savedPreference });
+      let savedPreference = localStorage.getItem("savedPreference") === "true";
       try {
-        if (savedRiskLevel === "High" && savedPreference === true) {
+        if (savedRiskLevel === "High" && savedPreference) {
           savedPreference = false;
         }
         const data = await getRecommendations(savedRiskLevel, savedPreference);
-        setRecommendations(data.recommendations ? data.recommendations : []);
-        console.log(data);
+        setRecommendations(data.recommendations || []);
         setPortfolioMetrics({
           expectedReturn: data.expected_return,
           portfolioStdDev: data.portfolio_std_dev,
@@ -44,6 +44,24 @@ export default function RecommendPage() {
     localStorage.clear();
     setRecommendations([]);
     router.push("/");
+  };
+
+  const fetchChart = async (ticker: string) => {
+    setChartLoading(true);
+    setSelectedStock(ticker);
+    try {
+      const response = await fetchStockChartData(ticker);
+      setChartData(response.chart); // Assuming API returns base64-encoded chart as `chart` key
+    } catch (error) {
+      console.error("Error fetching chart data:", error);
+    } finally {
+      setChartLoading(false);
+    }
+  };
+
+  const closeChartModal = () => {
+    setSelectedStock(null);
+    setChartData(null);
   };
 
   return (
@@ -65,7 +83,11 @@ export default function RecommendPage() {
             </thead>
             <tbody>
               {recommendations.slice(0, 5).map((stock: any) => (
-                <tr key={stock.Ticker}>
+                <tr
+                  key={stock.Ticker}
+                  className="cursor-pointer hover:bg-gray-200"
+                  onClick={() => fetchChart(stock.Ticker)}
+                >
                   <td className="border px-4 py-2">{stock.Ticker}</td>
                   <td className="border px-4 py-2">{stock["Company Name"]}</td>
                   <td className="border px-4 py-2">{stock.Sector}</td>
@@ -105,6 +127,35 @@ export default function RecommendPage() {
         </div>
       ) : (
         <p>No recommendations available.</p>
+      )}
+      {/* Modal for Chart */}
+      {selectedStock && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white rounded p-6 w-3/4 max-w-3xl">
+            <h2 className="text-xl font-bold mb-4">
+              Forecast for {selectedStock}
+            </h2>
+            {chartLoading ? (
+              <p>Loading chart...</p>
+            ) : chartData ? (
+              <img
+                src={`data:image/png;base64,${chartData}`}
+                alt={`Forecast for ${selectedStock}`}
+                className="w-full"
+              />
+            ) : (
+              <p>Error loading chart.</p>
+            )}
+            <div className="mt-4 text-right">
+              <button
+                onClick={closeChartModal}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );

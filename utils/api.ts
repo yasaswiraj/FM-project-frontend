@@ -66,3 +66,14 @@ export const getPortfolioPreference = async () => {
     throw error;
   }
 };
+
+// Fetch Chart Data for a Stock
+export const fetchStockChartData = async (ticker: string) => {
+  try {
+    const response = await apiClient.get(`/forecast/${ticker}`);
+    return response.data; // This should return a base64 image string
+  } catch (error) {
+    console.error(`Error fetching chart data for ${ticker}:`, error);
+    throw error;
+  }
+};
